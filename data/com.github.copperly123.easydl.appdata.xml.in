@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>com.github.copperly123.easydl.desktop</id>
+	<metadata_license>CC0-1.0</metadata_license>
+	<project_license>GPL-3.0-or-later</project_license>
+  <name>Easydl</name>
+  <summary>A Video Downloader Utility</summary>
+	<description>
+	  <p>A simple utility to download videos from youtube and any other site supported by youtube-dl"</p>
+	</description>
+</component>

@@ -1,0 +1,81 @@
+{
+    "app-id" : "com.github.copperly123.easydl",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "3.38",
+    "sdk" : "org.gnome.Sdk",
+    "command" : "easydl-gui",
+    "finish-args" : [
+        "--share=network",
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--socket=wayland"
+        "--filesystem=home"
+    ],
+    "cleanup" : [
+        "/include",
+        "/lib/pkgconfig",
+        "/man",
+        "/share/doc",
+        "/share/gtk-doc",
+        "/share/man",
+        "/share/pkgconfig",
+        "*.la",
+        "*.a"
+    ],
+    "modules" : [
+        {
+            "name" : "python3-youtube_dl",
+            "buildsystem" : "simple",
+            "build-commands" : [
+                "pip3 install --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"youtube_dl\" --no-build-isolation"
+            ],
+            "sources" : [
+                {
+                    "type" : "file",
+                    "url" : "https://files.pythonhosted.org/packages/be/d5/15995c54364497d2706011439c94a8629ccffc5c2ce0c406929b3958f27a/youtube_dl-2021.3.3.tar.gz",
+                    "sha256" : "02432aa2dd0e859e64d74fca2ad624abf3bead3dba811d594100e1cb7897dce7"
+                }
+            ]
+        },
+        {
+            "name" : "ffmpeg",
+            "config-opts" : [
+                "--disable-debug",
+                "--disable-doc",
+                "--disable-static",
+                "--enable-gpl",
+                "--enable-shared",
+                "--disable-ffplay",
+                "--disable-devices",
+                "--enable-gnutls",
+                "--enable-libmp3lame",
+                "--enable-libvorbis"
+            ],
+            "cleanup" : [
+                "/share/ffmpeg"
+            ],
+            "sources" : [
+                {
+                    "type" : "archive",
+                    "url" : "https://ffmpeg.org/releases/ffmpeg-4.3.2.tar.xz",
+                    "sha256" : "46e4e64f1dd0233cbc0934b9f1c0da676008cad34725113fb7f802cfa84ccddb"
+                }
+            ]
+        },
+        {
+            "name" : "easydl-gui",
+            "builddir" : true,
+            "buildsystem" : "meson",
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "file:///home/copperly/Documents/Computer/Linux_Programs/Mine/easydl-gui"
+                }
+            ]
+        }
+    ],
+    "build-options" : {
+        "env" : {
+        }
+    }
+}

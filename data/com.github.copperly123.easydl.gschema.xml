@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="easydl-gui">
+	<schema id="com.github.copperly123.easydl" path="/com/github/copperly123/easydl/">
+	</schema>
+</schemalist>

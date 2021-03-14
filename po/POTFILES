@@ -1,0 +1,7 @@
+data/com.github.copperly123.easydl.desktop.in
+data/com.github.copperly123.easydl.appdata.xml.in
+data/com.github.copperly123.easydl.gschema.xml
+src/window.ui
+src/main.py
+src/window.py
+

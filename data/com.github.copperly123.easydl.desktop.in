@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Easydl
+Exec=easydl-gui
+Icon=com.github.copperly123.easydl
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true
