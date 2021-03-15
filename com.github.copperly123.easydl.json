@@ -8,7 +8,7 @@
         "--share=network",
         "--share=ipc",
         "--socket=fallback-x11",
-        "--socket=wayland"
+        "--socket=wayland",
         "--filesystem=home"
     ],
     "cleanup" : [
@@ -69,13 +69,9 @@
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "file:///home/copperly/Documents/Computer/Linux_Programs/Mine/easydl-gui"
+                    "url" : "file:///home/copperly/Documents/Computer/Linux_Programs/Mine/Builder_Projects/easydl-gui"
                 }
             ]
         }
-    ],
-    "build-options" : {
-        "env" : {
-        }
-    }
+    ]
 }
