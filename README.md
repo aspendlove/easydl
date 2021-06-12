@@ -18,7 +18,7 @@ Thank you to the developers of the following applications for allowing me to lea
 
 https://github.com/JannikHv/gydl
 
-https://github.com/amikha1lov/RecApp/blob/master/build-aux/meson/postinstall.py
+https://github.com/amikha1lov/RecApp
 
 https://github.com/rafaelmardojai/blanket
 
