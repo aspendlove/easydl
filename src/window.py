@@ -18,8 +18,10 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import Gio
+from gi.repository import Gdk
 import youtube_dl
 import threading
+import os
 
 class ydl_logger(object):
     def debug(self, msg):
@@ -45,6 +47,7 @@ class EasydlGuiWindow(Gtk.ApplicationWindow):
     url_preview_label = Gtk.Template.Child()
     download_progress_bar = Gtk.Template.Child()
     main_menu_about_button = Gtk.Template.Child()
+    download_progress_label = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -54,23 +57,38 @@ class EasydlGuiWindow(Gtk.ApplicationWindow):
         self.download_format_combo_box.connect("changed", self.get_download_format)
         self.file_format_combo_box.connect("changed", self.get_file_format)
         self.playlist_mode_switch.connect("notify::active", self.get_playlist_mode)
+        self.url_entry_box.connect("changed", self.get_url)
         self.url_entry_box.connect("activate", self.get_url)
         self.main_menu_about_button.connect("clicked", self.show_about_dialog)
         #self.url_entry_box.connect("icon-press", self.get_url, Gtk.EntryIconPosition.SECONDARY)
 
         global ydl_opts
         global playlistMode
+        global downloadFilename
+        global currentDownload
+        #flags to enable download button
+        global downloadFormatReady
+        global fileFormatReady
+        global outputFolderReady
+        global urlReady
         ydl_opts = {"noplaylist": True}
         playlistMode = False
+        downloadFilename = "unset"
+        currentDownload = 1
+        downloadFormatReady = False
+        fileFormatReady = False
+        outputFolderReady = False
+        urlReady = False
 
-        # mainMenuModel = Gio.Menu()
-        # about_menu = Gio.SimpleAction.new('about', None)
-        # about_menu.connect('activate', self.show_about_dialog)
-        # self.add_action(about_menu)
-        # mainMenuModel.append('About', 'app.about')
-        # self.main_menu_button.set_popover(Gtk.Popover.new_from_model(self.main_menu_button, mainMenuModel))
+        #gtk_widget_set_sensitive(self.download_button, False)
+        self.download_button.set_sensitive(False)
+
 
     def get_download_format(self, download_format_combo_box):
+        global downloadFormatReady
+        global fileFormatReady
+        global outputFolderReady
+        global urlReady
         #code to change the format to download in (video or audio)
         global downloadFormat
         downloadFormat = download_format_combo_box.get_active_text()
@@ -93,36 +111,62 @@ class EasydlGuiWindow(Gtk.ApplicationWindow):
             for file_format in audioFileFormats.keys():
                 self.file_format_combo_box.append_text(file_format)
         #the active entry will automatically be cleared
+        fileFormatReady = False
+        self.download_button.set_sensitive(False)
+        downloadFormatReady = True
+        print("downloadFormatReady")
+        if downloadFormatReady and fileFormatReady and outputFolderReady and urlReady:
+            self.download_button.set_sensitive(True)
 
     def get_file_format(self, file_format_combo_box):
         #code to change the file format to download in
         global downloadFileFormat
+        global downloadFormatReady
+        global fileFormatReady
+        global outputFolderReady
+        global urlReady
         if downloadFormat == 'Video':
             downloadFileFormat = videoFileExtensions.get(file_format_combo_box.get_active_text(), 'mp4')
         else:
             downloadFileFormat = audioFileFormats.get(file_format_combo_box.get_active_text(), 'mp3')
-        # print(downloadFileFormat)
+        fileFormatReady = True
+        print("fileFormatReady")
+        if downloadFormatReady and fileFormatReady and outputFolderReady and urlReady:
+            self.download_button.set_sensitive(True)
 
     def get_output_folder(self, output_folder_file_selector):
         #get the folder that the user chose and store it in outputFolder
         global outputFolder
         global outputFormatYoutube
+        global downloadFormatReady
+        global fileFormatReady
+        global outputFolderReady
+        global urlReady
         outputFolder = output_folder_file_selector.get_filename()
         outputFolder = outputFolder + "/"
         outputFormatYoutube = outputFolder + u'%(title)s.%(ext)s'
-        # print(outputFolder)
+        print("outputFolderReady")
+        outputFolderReady = True
+        if downloadFormatReady and fileFormatReady and outputFolderReady and urlReady:
+            self.download_button.set_sensitive(True)
 
     def get_playlist_mode(self, playlist_mode_switch, gparam):
         #code to chose wheter the user wants to download a playlist or not
         # plyalistModeBool = playlist_mode_switch.get_state()
         global playlistMode
+        global downloadFormatReady
+        global fileFormatReady
+        global outputFolderReady
+        global urlReady
         if playlist_mode_switch.get_active():
             playlistMode = True
             ydl_opts.update({"noplaylist": False})
+            self.get_url(self.url_entry_box)
             # print(ydl_opts["noplaylist"])
         else:
             playlistMode = False
             ydl_opts.update({"noplaylist": True})
+            self.get_url(self.url_entry_box)
             # print(ydl_opts["noplaylist"])
         # print(playlistMode)
 
@@ -132,38 +176,59 @@ class EasydlGuiWindow(Gtk.ApplicationWindow):
         downloadUrl=url_entry_box.get_text()
         # print(downloadUrl)
 
-        #code to set the preview label
-        if playlistMode:
-            ydl_opts_playlist_title = {"playlist_items": "1"}
-            with youtube_dl.YoutubeDL(ydl_opts_playlist_title) as ydl:
-                playlistTitle = ydl.extract_info(downloadUrl, download=False)
-            self.url_preview_label.set_text(playlistTitle['title'])
-        else:
-            with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                videoTitle = ydl.extract_info(downloadUrl, download=False)
-            self.url_preview_label.set_text(videoTitle['title'])
+        def preview_label_thread_function():
+            global playlistSize
+            global downloadFormatReady
+            global fileFormatReady
+            global outputFolderReady
+            global urlReady
+            #code to set the preview label
+            if playlistMode:
+                # ydl_opts_playlist_title = {"playlist_items": "1"}
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    playlistMetadata = ydl.extract_info(downloadUrl, download=False)
+                    playlistSize = len(playlistMetadata['entries'])
+                self.url_preview_label.set_text(playlistMetadata['title'])
+                # gtk_widget_set_sensitive(self.download_button, True)
+                urlReady = True
+                print("urlReady")
+                if downloadFormatReady and fileFormatReady and outputFolderReady and urlReady:
+                    self.download_button.set_sensitive(True)
+            else:
+                with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+                    videoMetadata = ydl.extract_info(downloadUrl, download=False)
+                self.url_preview_label.set_text(videoMetadata['title'])
+                # gtk_widget_set_sensitive(self.download_button, True)
+                urlReady = True
+                print("urlReady")
+                if downloadFormatReady and fileFormatReady and outputFolderReady and urlReady:
+                    self.download_button.set_sensitive(True)
+        global preview_label_thread
+        preview_label_thread = threading.Thread(target=preview_label_thread_function)
+        preview_label_thread.start()
 
     def set_download_progress(self, progressDictionary):
-        #set the progress to be displayed on the progress bar
-        if progressDictionary['status'] == 'downloading':
-            #downloading
-            progress = progressDictionary['downloaded_bytes'] / progressDictionary['total_bytes'] - 0.1
-            #print(progress)
-            self.download_progress_bar.set_fraction(progress)
-        # elif progressDictionary['status'] == 'finished':
-        #     if downloadFormat == 'Video':
-        #         self.download_progress_bar.set_fraction(1)
-        #         self.show_download_message_dialog()
-        #         self.download_progress_bar.set_fraction(0)
-        #     else:
-                #youtube_audio_thread.join()
-        #         self.download_progress_bar.set_fraction(1)
-        #         self.show_download_message_dialog()
-        #         self.download_progress_bar.set_fraction(0)
+        global currentDownload
+        global playlistSize
+        global downloadFilename
+        if playlistMode:
+            if progressDictionary['status'] == 'downloading':
+                if downloadFilename == "unset":
+                    downloadFilename = progressDictionary['filename']
+                    self.download_progress_label.set_text("Downloading {0}/{1} - {2}".format(currentDownload, playlistSize, os.path.basename(progressDictionary['filename'])))
 
-        elif progressDictionary['status'] == 'error':
-            self.download_progress_bar.set_fraction(0)
-
+                elif downloadFilename != progressDictionary['filename']:
+                    currentDownload += 1
+                    downloadFilename = progressDictionary['filename']
+                    self.download_progress_label.set_text("Downloading {0}/{1} - {2}".format(currentDownload, playlistSize, os.path.basename(progressDictionary['filename'])))
+                progress = progressDictionary['downloaded_bytes'] / progressDictionary['total_bytes'] - 0.1
+                self.download_progress_bar.set_fraction(progress)
+        else:
+            if progressDictionary['status'] == 'downloading':
+                progress = progressDictionary['downloaded_bytes'] / progressDictionary['total_bytes'] - 0.1
+                self.download_progress_bar.set_fraction(progress)
+                if self.download_progress_label.get_text() != "Downloading {0}".format(os.path.basename(progressDictionary['filename'])):
+                    self.download_progress_label.set_text("Downloading {0}".format(os.path.basename(progressDictionary['filename'])))
     def on_download_button_press(self, download_button):
         #code to be execute once the download button is pressed
         if downloadFormat == 'Video':
@@ -201,6 +266,9 @@ class EasydlGuiWindow(Gtk.ApplicationWindow):
             youtube_audio_thread = threading.Thread(target=youtube_audio_thread_function)
             youtube_audio_thread.start()
 
+            # gtk_widget_set_sensitive(self.download_button, False)
+        self.download_button.set_sensitive(False)
+
     def show_about_dialog(self, main_menu_about_button):
         builder = Gtk.Builder.new_from_resource('/com/github/copperly123/easydl/about_dialog.ui')
         dialog = builder.get_object('about_dialog')
@@ -214,11 +282,15 @@ class EasydlGuiWindow(Gtk.ApplicationWindow):
         dialog.destroy()
 
     def youtube_audio_complete(self):
+        self.download_progress_label.set_text("Download complete")
         self.download_progress_bar.set_fraction(1)
         self.show_download_message_dialog()
         self.download_progress_bar.set_fraction(0)
+        self.download_progress_label.set_text("Fill out all options then press Download")
 
     def youtube_video_complete(self):
+        self.download_progress_label.set_text("Download complete")
         self.download_progress_bar.set_fraction(1)
         self.show_download_message_dialog()
         self.download_progress_bar.set_fraction(0)
+        self.download_progress_label.set_text("Fill out all options then press Download")
