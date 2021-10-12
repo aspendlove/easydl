@@ -1,7 +1,7 @@
 {
     "app-id" : "com.github.copperly123.easydl",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "41",
+    "runtime-version" : "3.38",
     "sdk" : "org.gnome.Sdk",
     "command" : "easydl-gui",
     "finish-args" : [
@@ -73,8 +73,5 @@
                 }
             ]
         }
-    ],
-    "build-options" : {
-        "env" : {        }
-    }
+    ]
 }
