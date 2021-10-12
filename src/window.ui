@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
+<!-- Generated with glade 3.39.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkImage" id="download_button_icon">
-    <property name="visible">True</property>
-    <property name="can-focus">False</property>
-    <property name="stock">gtk-save</property>
-  </object>
   <object class="GtkPopover" id="main_menu_popover">
     <property name="can-focus">False</property>
     <child>
       <object class="GtkBox" id="main_menu_popover_box">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
-        <property name="margin-left">5</property>
-        <property name="margin-right">5</property>
         <property name="margin-top">5</property>
         <property name="margin-bottom">5</property>
         <property name="orientation">vertical</property>

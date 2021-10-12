@@ -20,7 +20,7 @@ import sys
 import gi
 import youtube_dl
 
-gi.require_version('Gtk', '3.0')
+gi.require_version('Gtk', '4.0')
 
 from gi.repository import Gtk, Gio, Gdk
 
@@ -32,12 +32,12 @@ class Application(Gtk.Application):
         super().__init__(application_id='com.github.copperly123.easydl',
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
 
-        screen = Gdk.Screen.get_default()
-        css_provider = Gtk.CssProvider()
-        css_provider.load_from_resource('/com/github/copperly123/easydl/style.css')
+        #screen = Gdk.Screen.get_default()
+        #css_provider = Gtk.CssProvider()
+        #css_provider.load_from_resource('/com/github/copperly123/easydl/style.css')
         priority = Gtk.STYLE_PROVIDER_PRIORITY_USER
-        context = Gtk.StyleContext()
-        context.add_provider_for_screen(screen, css_provider, priority)
+        #context = Gtk.StyleContext()
+        #context.add_provider_for_screen(screen, css_provider, priority)
 
     def do_activate(self):
         win = self.props.active_window
