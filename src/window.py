@@ -15,11 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import GLib
-from gi.repository import Gio
+import gi.repository
+# from gi.repository import GLib
+# from gi.repository import Gio
 import youtube_dl
 import threading
+
+from gi.repository import Gtk, GLib, Gio
 
 class ydl_logger(object):
     def debug(self, msg):
