@@ -1,3 +1,5 @@
+# This project is no longer updated, and uses old libraries that may contain security vulnerabilities. It was a nice side project for a bit, but college knows how to stop those in their tracks.
+
 # easydl
 A graphical app for downloading videos through youtube-dl
 
